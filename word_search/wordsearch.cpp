@@ -25,6 +25,9 @@
 #include <string>
 #include <iterator>
 #include <algorithm>
+#ifdef GEM5
+#include "gem5/m5ops.h"
+#endif
 
 template < class T > class search : public raft::kernel
 {
@@ -83,13 +86,14 @@ main( int argc, char **argv )
     using search = search< chunk >;
     using print = raft::print< std::size_t, '\n'>;
     
-    const std::string term( argv[ 2 ] );
-    raft::map m;
-    if( argc < 2 )
+    if( argc < 4 )
     {
-        std::cerr << "must have at least one argument to run the search example\n";
+        std::cerr << "usage: ./wordsearch <file> <term> <#search workers>\n";
         exit( EXIT_FAILURE );
     }
+
+    const std::string term( argv[ 2 ] );
+    raft::map m;
 
     const auto kernel_count( atoi( argv[ 3 ] ) );
     fr   read( argv[ 1 ], (fr::offset_type) term.length(), kernel_count );
@@ -101,7 +105,18 @@ main( int argc, char **argv )
                 raft::kernel::make< search >( term ) >> p[ std::to_string( i ) ];
     }
 
-    //m.exe< partition_dummy, pool_schedule, vlalloc, no_parallel >();
+#ifdef GEM5
+    m5_reset_stats(0, 0);
+#endif
+
+#ifdef VL
+    m.exe< partition_dummy, pool_schedule, vlalloc, no_parallel >();
+#else
     m.exe< partition_dummy, pool_schedule, stdalloc, no_parallel >();
+#endif
+
+#ifdef GEM5
+    m5_dump_reset_stats(0, 0);
+#endif
     return( EXIT_SUCCESS );
 }
