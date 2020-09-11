@@ -25,9 +25,13 @@
 #include <string>
 #include <iterator>
 #include <algorithm>
+<<<<<<< HEAD
 #ifdef GEM5
 #include "gem5/m5ops.h"
 #endif
+=======
+#include <chrono> 
+>>>>>>> 96990e78627ff0c314399fa75ae565c7dab3c69a
 
 template < class T > class search : public raft::kernel
 {
@@ -50,7 +54,7 @@ public:
 
    virtual ~search() = default;
 
-   virtual raft::kstatus run()
+   virtual raft::kstatus run() override
    {
       auto &chunk( input[ "0" ].template peek< T >() );
       auto it( chunk.begin() );
@@ -81,7 +85,8 @@ private:
 int
 main( int argc, char **argv )
 {
-    using chunk = raft::filechunk< 256 >;
+    using chunk = raft::filechunk< 48 /** 48B data, 12B meta == 60B payload **/ >;
+    std::cerr << "chunk size: " << sizeof( chunk ) << "\n";
     using fr    = raft::filereader< chunk, false >;
     using search = search< chunk >;
     using print = raft::print< std::size_t, '\n'>;
@@ -105,6 +110,7 @@ main( int argc, char **argv )
                 raft::kernel::make< search >( term ) >> p[ std::to_string( i ) ];
     }
 
+<<<<<<< HEAD
 #ifdef GEM5
     m5_reset_stats(0, 0);
 #endif
@@ -118,5 +124,15 @@ main( int argc, char **argv )
 #ifdef GEM5
     m5_dump_reset_stats(0, 0);
 #endif
+=======
+    std::cerr << "starting time\n";
+    const auto start( std::chrono::high_resolution_clock::now() );
+    m.exe< partition_dummy, pool_schedule, stdalloc, no_parallel >();
+    const auto end( std::chrono::high_resolution_clock::now() );
+    std::cerr << "ending time\n";
+    const std::chrono::duration<double> total = end - start;
+    //std::chrono::duration_cast< std::chrono::seconds >(  end - start );
+    std::cerr << "region of interest timing: (" << total.count() << ") s\n";
+>>>>>>> 96990e78627ff0c314399fa75ae565c7dab3c69a
     return( EXIT_SUCCESS );
 }

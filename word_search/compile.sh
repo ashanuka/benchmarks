@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+<<<<<<< HEAD
 if [ "$GEM5_ROOT" != "" ];
 then
     GEM5_INC="-I$GEM5_ROOT/include -DGEM5"
@@ -25,3 +26,6 @@ if [ $HASVL ];
 then
     g++ -std=gnu++17 `pkg-config --cflags raftlib` $GEM5_INC $VL_INC -O0 -g $1.cpp -o $1_vl -DVL `pkg-config --libs raftlib` $GEM5_LIB $VL_LIB
 fi
+=======
+g++ -std=gnu++17 `pkg-config --cflags raftlib` -O3 -mtune=native $1.cpp -o $1 `pkg-config --libs raftlib`
+>>>>>>> 96990e78627ff0c314399fa75ae565c7dab3c69a
